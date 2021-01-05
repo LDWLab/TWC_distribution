@@ -4,10 +4,10 @@ This is a small script that draws a simple distribution from a TwinCons RiboVisi
 
 Sample command:
 
-> ./bin/twcDist.py ./data/TWC_blastn_AB_23S.csv ./output/PNG/TWC_blastn_AB_23S.png ./output/CSV/TWC_blastn_AB_23S.csv
+> ./bin/twcDist.py ./data/TWC_blastn_AB_LSUa.csv ./output/PNG/TWC_blastn_AB_LSUa.png ./output/CSV/TWC_blastn_AB_LSUa.csv
 
 First argument is the input, second is the path for image output, and third is the path for csv output of outliers.
 
 Sample output:
 
-<img src="./output/twc_bl62_HS-CASP9_SC-MCASP_MCASP.png">
+<img src="./output/PNG/twc_bl62_HS-CASP9_SC-MCASP_MCASP.png">
