@@ -2,11 +2,11 @@
 import sys, csv
 import numpy as np
 from twincons.TwinCons import data_to_diverging_gradients
-
+from scipy.cluster.vq import kmeans, kmeans2
+import scipy.cluster as cluster
+import matplotlib.pyplot as plt
 
 def plot_data_dist_and_anomaly_threshold(data, lower_limit, upper_limit, std, outpath):
-    import matplotlib.pyplot as plt
-    import matplotlib as mpl
     plt.title(f"Thresholds determined with {std} standard deviations from the mean.")
     plt.hist(list(data.values()), bins=50)
     plt.axvline(x=lower_limit, color='r')
@@ -15,7 +15,7 @@ def plot_data_dist_and_anomaly_threshold(data, lower_limit, upper_limit, std, ou
     plt.close()
     return True
 
-def find_anomalies(data, outpath, std_devs = 2):
+def find_anomalies(data, std_devs = 2):
     
     anomalies = dict()
     data_list = list(data.values())
@@ -28,10 +28,8 @@ def find_anomalies(data, outpath, std_devs = 2):
     for pdbRef, outlier in data.items():
         if outlier > upper_limit or outlier < lower_limit:
             anomalies[pdbRef] = outlier
-    
-    plot_data_dist_and_anomaly_threshold(data, lower_limit, upper_limit, std_devs, outpath)
 
-    return anomalies
+    return lower_limit, upper_limit, anomalies
 
 def remove_anomalies(subfspec, anomalies):
     clean_subfspec = dict()
@@ -59,8 +57,7 @@ def data_to_colors(final_data_dict):
         color_dict[k] = data_to_diverging_gradients(v, ze_max, ze_min, 'Greens', 'Purples')
     return color_dict
 
-def twc_fun(twc_loc, outpath):
-    import csv
+def read_twc_data(twc_loc):
     twc_data = dict()
     with open(twc_loc) as twc_f:
         reader = csv.reader(twc_f)
@@ -70,12 +67,44 @@ def twc_fun(twc_loc, outpath):
             if line[1] == 'NA':
                 continue
             twc_data[line[0]] = float(line[1])
-    twc_anomally = find_anomalies(twc_data, outpath, 1)
-    return twc_anomally
+    return twc_data
+
+def main(inTWC, outpng, outcsv):
+    twc_data = read_twc_data(inTWC)
+    lower_limit, upper_limit, twc_anomally = find_anomalies(twc_data, 1)
+    
+    twcListData = list(twc_data.values())
+    centroids, avg_distance = kmeans(twcListData, 7)
+    groups, cdist = cluster.vq.vq(twcListData, centroids)
+
+    minGroup = groups[np.argmin(twcListData)]
+    maxGroup = groups[np.argmax(twcListData)]
+
+    minLoc, maxLoc = list(), list()
+    for ix, g in enumerate(groups):
+        if g == minGroup:
+            minLoc.append(ix)
+        if g == maxGroup:
+            maxLoc.append(ix)
+
+    lowOutlierDatas = [twcListData[loc] for loc in minLoc]
+    return np.max(lowOutlierDatas)
+    #plt.scatter(twcListData, np.arange(0,len(twcListData)), c=groups)
+    #plt.savefig('test2.png')
+    #plt.close()
+
+    #plot_data_dist_and_anomaly_threshold(twc_data, lower_limit, upper_limit, 1, outpng)
+    #with open(outcsv, 'w') as f:
+    #    f.write("Residue,TWC\n")
+    #    for key in twc_anomally.keys():
+    #        f.write(f"{key},{twc_anomally[key]}\n")
+
+i = 0
+statMins = list()
+while i < 100:
+    statMins.append(main(sys.argv[1], sys.argv[2], sys.argv[3]))
+    i += 1
+
+print(np.mean(statMins), np.std(statMins))
 
 
-twc_anomally = twc_fun(sys.argv[1], sys.argv[2])
-with open(sys.argv[3], 'w') as f:
-    f.write("Residue,TWC\n")
-    for key in twc_anomally.keys():
-        f.write(f"{key},{twc_anomally[key]}\n")

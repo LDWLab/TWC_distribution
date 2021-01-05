@@ -1,0 +1,28 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Testing protein",
+			"type": "python",
+			"request": "launch",
+			"program": "./bin/twcDist.py",
+			"console": "integratedTerminal",
+			"args": [
+				"./data/twc_bl62_HS-CASP9_SC-MCASP_CASP9.csv", 
+				"./output/PNG/twc_bl62_HS-CASP9_SC-MCASP_CASP9.png",
+				"./output/CSV/twc_bl62_HS-CASP9_SC-MCASP_CASP9.csv",
+			]
+		},{
+			"name": "Testing rRNA",
+			"type": "python",
+			"request": "launch",
+			"program": "./bin/twcDist.py",
+			"console": "integratedTerminal",
+			"args": [
+				"./data/TWC_blastn_AB_LSUa.csv", 
+				"./output/PNG/TWC_blastn_AB_LSUa.png",
+				"./output/CSV/TWC_blastn_AB_LSUa.csv",
+			]
+		}
+	]
+}
