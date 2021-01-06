@@ -78,7 +78,7 @@ def calculate_stats(twcListData, ks):
     return [np.max(lowOutlierDatas), groups]
 
 def plot_data_dist_and_anomaly_threshold(data, lower_limit, lowerStd, outpath):
-    plt.title(f"Threshold at {round(lower_limit,2)} determined with 7 kmeans.")
+    plt.title(f"Threshold at {round(lower_limit,2)} determined with 5 kmeans.")
     plt.hist(list(data.values()), bins=50)
     plt.axvline(x=lower_limit, color='r')
     plt.axvspan(lower_limit-lowerStd, lower_limit+lowerStd, color='r', alpha=.5)
@@ -95,10 +95,10 @@ def main(inTWC, outpng, outcsv):
     i = 0
     statMins = list()
     while i < 100:
-        statMins.append(calculate_stats(twcListData, 7)[0])
+        statMins.append(calculate_stats(twcListData, 5)[0])
         i += 1
 
-    groups = calculate_stats(twcListData, 7)[1]
+    groups = calculate_stats(twcListData, 5)[1]
     print(round(np.mean(statMins),3), round(np.std(statMins),3))
     signatureThreshold = np.mean(statMins)
 
