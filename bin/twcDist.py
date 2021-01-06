@@ -75,13 +75,16 @@ def calculate_stats(twcListData, ks):
             maxLoc.append(ix)
 
     lowOutlierDatas = [twcListData[loc] for loc in minLoc]
-    return [np.max(lowOutlierDatas), groups]
+    highOutlierDatas = [twcListData[loc] for loc in maxLoc]
+    return [np.max(lowOutlierDatas), np.min(highOutlierDatas), groups]
 
-def plot_data_dist_and_anomaly_threshold(data, lower_limit, lowerStd, outpath):
-    plt.title(f"Threshold at {round(lower_limit,2)} determined with 5 kmeans.")
+def plot_data_dist_and_anomaly_threshold(data, lowerLimit, lowerStd, upperlimit, upperStd, outpath):
+    plt.title(f"Signature threshold at {round(lowerLimit,2)} determined with 5 kmeans.\nConserved threshold at {round(upperlimit,2)}")
     plt.hist(list(data.values()), bins=50)
-    plt.axvline(x=lower_limit, color='r')
-    plt.axvspan(lower_limit-lowerStd, lower_limit+lowerStd, color='r', alpha=.5)
+    plt.axvline(x=lowerLimit, color='r')
+    plt.axvline(x=upperlimit, color='g')
+    plt.axvspan(lowerLimit-lowerStd, lowerLimit+lowerStd, color='r', alpha=.3)
+    plt.axvspan(upperlimit-upperStd, upperlimit+upperStd, color='g', alpha=.3)
     plt.savefig(outpath)
     plt.close()
     return True
@@ -93,23 +96,27 @@ def main(inTWC, outpng, outcsv):
     twcListData = list(twc_data.values())
 
     i = 0
-    statMins = list()
+    statMins, statsMaxs = list(), list()
     while i < 100:
         statMins.append(calculate_stats(twcListData, 5)[0])
+        statsMaxs.append(calculate_stats(twcListData, 5)[1])
         i += 1
 
-    groups = calculate_stats(twcListData, 5)[1]
-    print(round(np.mean(statMins),3), round(np.std(statMins),3))
+    groups = calculate_stats(twcListData, 5)[2]
+    print(f"Min thr: {round(np.mean(statMins),3)}, STD: {round(np.std(statMins),3)}\tMax thr: {round(np.mean(statsMaxs),3)}, STD: {round(np.std(statsMaxs),3)}")
     signatureThreshold = np.mean(statMins)
+    conservedThreshold = np.mean(statsMaxs)
 
     plt.title(f"TWC signature threshold {round(signatureThreshold,2)}")
     plt.scatter(twcListData, np.arange(0,len(twcListData)), c=groups)
     plt.axvline(x=signatureThreshold, c='r')
-    plt.axvspan(signatureThreshold-np.std(statMins), signatureThreshold+np.std(statMins), color='r', alpha=.5)
+    plt.axvline(x=conservedThreshold, c='g')
+    plt.axvspan(signatureThreshold-np.std(statMins), signatureThreshold+np.std(statMins), color='r', alpha=.3)
+    plt.axvspan(conservedThreshold-np.std(statsMaxs), conservedThreshold+np.std(statsMaxs), color='g', alpha=.3)
     plt.savefig(outpng.replace('.png', '_groups.png'))
     plt.close()
 
-    plot_data_dist_and_anomaly_threshold(twc_data, signatureThreshold, np.std(statMins), outpng)
+    plot_data_dist_and_anomaly_threshold(twc_data, signatureThreshold, np.std(statMins), conservedThreshold, np.std(statsMaxs), outpng)
     with open(outcsv, 'w') as f:
         f.write(f"TWC signature threshold and STD {round(np.mean(statMins),3)},{round(np.std(statMins),3)}\n")
         f.write("Residue,TWC\n")
