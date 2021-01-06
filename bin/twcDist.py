@@ -99,7 +99,7 @@ def main(inTWC, outpng, outcsv):
         i += 1
 
     groups = calculate_stats(twcListData, 7)[1]
-    print(np.mean(statMins), np.std(statMins))
+    print(round(np.mean(statMins),3), round(np.std(statMins),3))
     signatureThreshold = np.mean(statMins)
 
     plt.title(f"TWC signature threshold {round(signatureThreshold,2)}")
@@ -111,8 +111,10 @@ def main(inTWC, outpng, outcsv):
 
     plot_data_dist_and_anomaly_threshold(twc_data, signatureThreshold, np.std(statMins), outpng)
     with open(outcsv, 'w') as f:
+        f.write(f"TWC signature threshold and STD {round(np.mean(statMins),3)},{round(np.std(statMins),3)}\n")
         f.write("Residue,TWC\n")
         for key in twc_anomally.keys():
             f.write(f"{key},{twc_anomally[key]}\n")
+
 
 main(sys.argv[1], sys.argv[2], sys.argv[3])
