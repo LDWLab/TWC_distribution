@@ -2,18 +2,9 @@
 import sys, csv
 import numpy as np
 from twincons.TwinCons import data_to_diverging_gradients
-from scipy.cluster.vq import kmeans, kmeans2
+from scipy.cluster.vq import kmeans
 import scipy.cluster as cluster
 import matplotlib.pyplot as plt
-
-def plot_data_dist_and_anomaly_threshold(data, lower_limit, upper_limit, std, outpath):
-    plt.title(f"Thresholds determined with {std} standard deviations from the mean.")
-    plt.hist(list(data.values()), bins=50)
-    plt.axvline(x=lower_limit, color='r')
-    plt.axvline(x=upper_limit, color='g')
-    plt.savefig(outpath)
-    plt.close()
-    return True
 
 def find_anomalies(data, std_devs = 2):
     
@@ -69,12 +60,8 @@ def read_twc_data(twc_loc):
             twc_data[line[0]] = float(line[1])
     return twc_data
 
-def main(inTWC, outpng, outcsv):
-    twc_data = read_twc_data(inTWC)
-    lower_limit, upper_limit, twc_anomally = find_anomalies(twc_data, 1)
-    
-    twcListData = list(twc_data.values())
-    centroids, avg_distance = kmeans(twcListData, 7)
+def calculate_stats(twcListData, ks):
+    centroids, avg_distance = kmeans(twcListData, ks)
     groups, cdist = cluster.vq.vq(twcListData, centroids)
 
     minGroup = groups[np.argmin(twcListData)]
@@ -88,23 +75,44 @@ def main(inTWC, outpng, outcsv):
             maxLoc.append(ix)
 
     lowOutlierDatas = [twcListData[loc] for loc in minLoc]
-    return np.max(lowOutlierDatas)
-    #plt.scatter(twcListData, np.arange(0,len(twcListData)), c=groups)
-    #plt.savefig('test2.png')
-    #plt.close()
+    return [np.max(lowOutlierDatas), groups]
 
-    #plot_data_dist_and_anomaly_threshold(twc_data, lower_limit, upper_limit, 1, outpng)
-    #with open(outcsv, 'w') as f:
-    #    f.write("Residue,TWC\n")
-    #    for key in twc_anomally.keys():
-    #        f.write(f"{key},{twc_anomally[key]}\n")
+def plot_data_dist_and_anomaly_threshold(data, lower_limit, lowerStd, outpath):
+    plt.title(f"Threshold at {round(lower_limit,2)} determined with 7 kmeans.")
+    plt.hist(list(data.values()), bins=50)
+    plt.axvline(x=lower_limit, color='r')
+    plt.axvspan(lower_limit-lowerStd, lower_limit+lowerStd, color='r', alpha=.5)
+    plt.savefig(outpath)
+    plt.close()
+    return True
 
-i = 0
-statMins = list()
-while i < 100:
-    statMins.append(main(sys.argv[1], sys.argv[2], sys.argv[3]))
-    i += 1
+def main(inTWC, outpng, outcsv):
+    twc_data = read_twc_data(inTWC)
+    lower_limit, upper_limit, twc_anomally = find_anomalies(twc_data, 1)
+    
+    twcListData = list(twc_data.values())
 
-print(np.mean(statMins), np.std(statMins))
+    i = 0
+    statMins = list()
+    while i < 100:
+        statMins.append(calculate_stats(twcListData, 7)[0])
+        i += 1
 
+    groups = calculate_stats(twcListData, 7)[1]
+    print(np.mean(statMins), np.std(statMins))
+    signatureThreshold = np.mean(statMins)
 
+    plt.title(f"TWC signature threshold {round(signatureThreshold,2)}")
+    plt.scatter(twcListData, np.arange(0,len(twcListData)), c=groups)
+    plt.axvline(x=signatureThreshold, c='r')
+    plt.axvspan(signatureThreshold-np.std(statMins), signatureThreshold+np.std(statMins), color='r', alpha=.5)
+    plt.savefig(outpng.replace('.png', '_groups.png'))
+    plt.close()
+
+    plot_data_dist_and_anomaly_threshold(twc_data, signatureThreshold, np.std(statMins), outpng)
+    with open(outcsv, 'w') as f:
+        f.write("Residue,TWC\n")
+        for key in twc_anomally.keys():
+            f.write(f"{key},{twc_anomally[key]}\n")
+
+main(sys.argv[1], sys.argv[2], sys.argv[3])
