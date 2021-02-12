@@ -4,9 +4,9 @@ This is a small script that draws a simple distribution from a TwinCons RiboVisi
 
 Sample command:
 
-> ./bin/twcDist.py ./data/TWC_blastn_AB_LSUa.csv ./output/PNG/TWC_blastn_AB_LSUa.png ./output/CSV/TWC_blastn_AB_LSUa.csv
+> ./bin/twcDist.py ./data/TWC_blastn_AB_LSUa.csv ./output/PNG/TWC_blastn_AB_LSUa.png ./output/CSV/TWC_blastn_AB_LSUa.csv 5
 
-First argument is the input, second is the path for image output, and third is the path for csv output of outliers.
+First argument is the input, second is the path for image output third is the path for csv output of outliers, and last is the number of kmeans to use
 
 Sample output:
 

@@ -89,20 +89,20 @@ def plot_data_dist_and_anomaly_threshold(data, lowerLimit, lowerStd, upperlimit,
     plt.close()
     return True
 
-def main(inTWC, outpng, outcsv):
+def main(inTWC, outpng, outcsv, numkmeans):
     twc_data = read_twc_data(inTWC)
     lower_limit, upper_limit, twc_anomally = find_anomalies(twc_data, 1)
-    
+    numkmeans = int(numkmeans)
     twcListData = list(twc_data.values())
 
     i = 0
     statMins, statsMaxs = list(), list()
     while i < 100:
-        statMins.append(calculate_stats(twcListData, 5)[0])
-        statsMaxs.append(calculate_stats(twcListData, 5)[1])
+        statMins.append(calculate_stats(twcListData, numkmeans)[0])
+        statsMaxs.append(calculate_stats(twcListData, numkmeans)[1])
         i += 1
 
-    groups = calculate_stats(twcListData, 5)[2]
+    groups = calculate_stats(twcListData, numkmeans)[2]
     print(f"Min thr: {round(np.mean(statMins),3)}, STD: {round(np.std(statMins),3)}\tMax thr: {round(np.mean(statsMaxs),3)}, STD: {round(np.std(statsMaxs),3)}")
     signatureThreshold = np.mean(statMins)
     conservedThreshold = np.mean(statsMaxs)
@@ -124,4 +124,4 @@ def main(inTWC, outpng, outcsv):
             f.write(f"{key},{twc_anomally[key]}\n")
 
 
-main(sys.argv[1], sys.argv[2], sys.argv[3])
+main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])

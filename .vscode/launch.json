@@ -9,8 +9,21 @@
 			"console": "integratedTerminal",
 			"args": [
 				"./data/twc_bl62_HS-CASP9_SC-MCASP_CASP9.csv", 
-				"./output/PNG/twc_bl62_HS-CASP9_SC-MCASP_CASP9.png",
-				"./output/CSV/twc_bl62_HS-CASP9_SC-MCASP_CASP9.csv",
+				"./output/PNG/twc_bl62_HS-CASP9_SC-MCASP_CASP93km.png",
+				"./output/CSV/twc_bl62_HS-CASP9_SC-MCASP_CASP93km.csv",
+				"3"
+			]
+		},{
+			"name": "CASP9 SSBE",
+			"type": "python",
+			"request": "launch",
+			"program": "./bin/twcDist.py",
+			"console": "integratedTerminal",
+			"args": [
+				"./data/twc_ssbe_HS-CASP9_SC-MCASPrv_CASP9.csv", 
+				"./output/PNG/twc_ssbe_HS-CASP9_SC-MCASP_CASP9_5km.png",
+				"./output/CSV/twc_ssbe_HS-CASP9_SC-MCASP_CASP9_5km.csv",
+				"5"
 			]
 		},{
 			"name": "Testing rRNA",
