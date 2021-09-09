@@ -1,10 +1,25 @@
 #!/usr/bin/env python3
 import sys, csv
 import numpy as np
-from twincons.TwinCons import data_to_diverging_gradients
+#from twincons.TwinCons import data_to_diverging_gradients
 from scipy.cluster.vq import kmeans
 import scipy.cluster as cluster
+import matplotlib
 import matplotlib.pyplot as plt
+
+def data_to_diverging_gradients(datapoint, maxdata, mindata, positivegradient, negativegradient):
+    '''Maps a data point to a diverging colormap depending on whether its above or bellow 0.
+    Returns a hex code.
+    '''
+    if datapoint == 'NA':
+        return '#808080'
+    if datapoint >= 0:
+        grad = np.atleast_2d(np.linspace(0,datapoint/maxdata,256)).T
+        rgb = plt.get_cmap(positivegradient)(grad[len(grad)-1])[0][:3]
+    else:
+        grad = np.atleast_2d(np.linspace(0,datapoint/mindata,256)).T
+        rgb = plt.get_cmap(negativegradient)(grad[len(grad)-1])[0][:3]
+    return matplotlib.colors.rgb2hex(rgb)
 
 def find_anomalies(data, std_devs = 2):
     
